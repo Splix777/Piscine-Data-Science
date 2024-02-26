@@ -26,4 +26,4 @@ def load(path: str) -> pd.DataFrame:
 
 
 if __name__ == '__main__':
-    print(load('life_expectancy_years.csv'))
+    print(load('../subject/customer/data_2022_oct.csv'))

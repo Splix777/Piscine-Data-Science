@@ -56,15 +56,6 @@ class DatabaseConnection:
         self.cursor.execute(make_query, params)
         self.connection.commit()
 
-    def fetchall(self):
-        """
-        Fetches all rows from the result of the last executed query.
-
-        Returns:
-        list
-        """
-        return self.cursor.fetchall()
-
 
 class TableModifier:
     """
@@ -94,34 +85,6 @@ class TableModifier:
                 query += f", {column} {data_type}"
             query += ")"
             self.db.execute(query)
-
-    def clear_table(self, list_of_tables: str):
-        """
-        Clears all rows from a table in the database.
-
-        Args:
-        list_of_tables: str
-        """
-        self.db.execute(f"DELETE FROM {list_of_tables}")
-
-    def drop_table(self, list_of_tables: str):
-        """
-        Drops a table from the database.
-
-        Args:
-        list_of_tables: str
-        """
-        self.db.execute(f"DROP TABLE {list_of_tables}")
-
-    def delete_table(self, list_of_tables: str):
-        """
-        Deletes a table from the database.
-
-        Args:
-        list_of_tables: str
-        """
-        self.clear_table(list_of_tables)
-        self.drop_table(list_of_tables)
 
 
 class GetCSVNames:
@@ -159,8 +122,10 @@ if __name__ == "__main__":
     name = os.getenv("DB_NAME")
     user = os.getenv("DB_USER")
     password = os.getenv("DB_PASSWORD")
-    csv_getter = GetCSVNames("../subject/customer")
-    list_of_tables = csv_getter.get_csv_names()
+    customer_csvs = GetCSVNames("../subject/customer")
+    list_of_tables = customer_csvs.get_csv_names()
+    items_csvs = GetCSVNames("../subject/item")
+
     print(f'Found the following .csv files: {list_of_tables}')
 
     with DatabaseConnection(host, port, name, user, password) as db:
