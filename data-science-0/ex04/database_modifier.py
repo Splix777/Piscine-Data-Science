@@ -41,12 +41,11 @@ class DatabaseModifier:
             "price": "FLOAT",
             "user_id": "INTEGER",
             "user_session": "VARCHAR(255)",
-            "category_id": "INTEGER",
+            "category_id": "BIGINT",
             "category_code": "VARCHAR(255)",
             "brand": "VARCHAR(255)",
         }
-        postgres_data_type = csv_to_postgres_types[column]
-        return postgres_data_type
+        return csv_to_postgres_types[column]
 
     def create_tables_from_csv(self, csv: CSVInfo):
         """
@@ -60,13 +59,13 @@ class DatabaseModifier:
             table_name = csv.filename.split(".")[0]
             query = f"CREATE TABLE IF NOT EXISTS {table_name} ("
             for column, data_type in csv.types.items():
-                postgres_data_type = self._get_data_types(column, data_type)
+                postgres_data_type = self._get_data_types(str(column), data_type)
                 query += f"{column} {postgres_data_type}, "
             query = query.rstrip(', ')  # Remove the trailing comma
             query += ")"
             self.db.execute(query)
         except Exception as e:
-            raise f'Error in create_tables_from_csv: {e}'
+            print(f'Error in create_tables_from_csv: {e}')
 
     def load_csv_into_table(self, csv: CSVInfo):
         try:
@@ -84,40 +83,6 @@ class DatabaseModifier:
                 query = f"COPY {table_name} FROM STDIN DELIMITER ',' CSV HEADER;"
                 self.db.cursor.copy_expert(sql=query, file=file_like_object)
                 self.db.connection.commit()
+
         except Exception as e:
-            raise f'Error in load_csv_into_table: {e}'
-
-
-if __name__ == "__main__":
-    try:
-        dotenv.load_dotenv()
-        with DatabaseConnection(
-            host=os.getenv("DB_HOST"),
-            port=os.getenv("DB_PORT"),
-            name=os.getenv("DB_NAME"),
-            user=os.getenv("DB_USER"),
-            password=os.getenv("DB_PASSWORD"),
-        ) as db:
-            print(f'Connected to {os.getenv("DB_NAME")} database, user {os.getenv("DB_USER")}.')
-
-            modifier = DatabaseModifier(db)
-            files = LoadFromDir(
-                directory=os.path.abspath(os.path.join(os.path.dirname(__file__), '../subject')),
-                file_extension="csv",
-                multiple_subdirectories=True,
-            )
-            print(f"\nCreating tables for CSV in {files.directory}.")
-
-            for file in tqdm.tqdm(
-                    range(len(files.files)),
-                    desc='Creating tables',
-                    colour='green',
-                    file=sys.stdout,
-            ):
-                csv = CSVInfo(files.files[file])
-                modifier.create_tables_from_csv(csv)
-                modifier.load_csv_into_table(csv)
-
-    except Exception as e:
-        print(f'Error in main: {e}')
-
+            print(f'Error in load_csv_into_table: {e}')

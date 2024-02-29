@@ -41,19 +41,17 @@ class LoadFromDir:
         Returns:
         list
         """
-        if os.path.exists(self.directory):
-            if self.multiple_subdirectories:
-                files = glob.glob(self.directory + '/**/*.' + self.file_extension, recursive=True)
-            else:
-                files = glob.glob(self.directory + '/*.' + self.file_extension)
-            if len(files) == 0:
-                raise FileNotFoundError(f'No files with the extension {self.file_extension} found in {self.directory}.')
-            else:
-                self.filenames = [file for file in files]
-                self.files = files
-                return files
-        else:
+        if not os.path.exists(self.directory):
             raise FileNotFoundError(f'The directory {self.directory} does not exist.')
+        if self.multiple_subdirectories:
+            files = glob.glob(self.directory + '/**/*.' + self.file_extension, recursive=True)
+        else:
+            files = glob.glob(self.directory + '/*.' + self.file_extension)
+        if not files:
+            raise FileNotFoundError(f'No files with the extension {self.file_extension} found in {self.directory}.')
+        self.filenames = list(files)
+        self.files = files
+        return files
 
 
 if __name__ == '__main__':
