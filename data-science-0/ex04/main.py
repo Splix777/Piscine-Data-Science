@@ -23,7 +23,7 @@ def main():
 
             modifier = DatabaseModifier(db)
             files = LoadFromDir(
-                directory=os.path.abspath(os.path.join(os.path.dirname(__file__), '../../subject/item')),
+                directory=os.path.abspath(os.path.join(os.path.dirname(__file__), '../../subject')),
                 file_extension="csv",
                 multiple_subdirectories=True,
             )

@@ -92,45 +92,81 @@ class DatabaseModifier:
         except Exception as e:
             print(f'Error in load_csv_into_table: {e}')
 
-    def create_one_table_from_multiple_csv(self, csv_files: list, name: str = None):
+    def merge_existing_tables_to_one(self, tables: list, name: str = None):
         """
-        Takes a list of .csv files and creates a single
+        Takes a list of tables and creates a single
         table named 'name' in the database. Merging the
         files into one table. If no name is given, we
         will return an error.
 
         Args:
-        csv_files: list
+        tables: list
         name: str
         """
         try:
             if not name:
                 raise ValueError("Please provide a name for the table.")
-            query = f"CREATE TABLE IF NOT EXISTS {name} ("
-            for csv in tqdm.tqdm(csv_files, desc="Creating table"):
-                csv = CSVInfo(csv)
-                for column, data_type in csv.types.items():
-                    postgres_data_type = _get_data_types(str(column), data_type)
-                    query += f"{column} {postgres_data_type}, "
-            query = query.rstrip(', ')  # Remove the trailing comma
+            query = f"CREATE TABLE IF NOT EXISTS {name} AS ("
+            for table in tqdm.tqdm(tables, desc="Creating table"):
+                query += f"SELECT * FROM {table} UNION ALL "
+            query = query.rstrip('UNION ALL ')  # Remove the trailing UNION ALL
             query += ")"
             self.db.execute(query)
 
-            for csv in tqdm.tqdm(csv_files, desc="Loading data"):
-                csv = CSVInfo(csv)
-                self.load_csv_into_table(csv, table_name=name)
+        except Exception as e:
+            print(f'Error in merge_existing_tables_to_one: {e}')
+
+    def drop_table(self, table_name: str):
+        """
+        Drops a table from the database.
+
+        Args:
+        table_name: str
+        """
+        try:
+            query = f"DROP TABLE IF EXISTS {table_name}"
+            self.db.execute(query)
+        except Exception as e:
+            print(f'Error in drop_table: {e}')
+
+    def remove_duplicates(self, table_name: str):
+        """
+        Removes duplicates from a table in the database.
+
+        Args:
+        table_name: str
+        """
+        try:
+            query = (
+                f"CREATE TEMPORARY TABLE temp_{table_name} AS "
+                f"SELECT DISTINCT * FROM {table_name}; "
+                f"TRUNCATE {table_name}; "
+                f"INSERT INTO {table_name} SELECT * FROM temp_{table_name};"
+            )
+            self.db.execute(query)
 
         except Exception as e:
-            print(f'Error in create_one_table_from_multiple_csv: {e}')
-#
-# CREATE TABLE IF NOT EXISTS customers AS (
-#     SELECT * FROM data_2022_oct
-#     UNION ALL
-#     SELECT * FROM data_2022_nov
-#     UNION ALL
-#     SELECT * FROM data_2022_dec
-#     UNION ALL
-#     SELECT * FROM data_2023_jan
-#     UNION ALL
-#     SELECT * FROM data_2023_feb
-# );
+            print(f'Error in remove_duplicates: {e}')
+
+    def join_tables(self, table1: str, table2: str, common_column: str):
+        """
+        Joins two tables together updating table1.
+        table2 will remain unchanged.
+
+        Args:
+        - table1 (str): Name of the first table.
+        - table2 (str): Name of the second table.
+        - common_column (str): Common column used for the INNER JOIN.
+        """
+        try:
+            query = (
+                f"SELECT {table1}.*, {table2}.* "
+                f"FROM {table1} "
+                f"INNER JOIN {table2} "
+                f"ON {table1}.{common_column} = {table2}.{common_column};"
+            )
+            self.db.execute(query)
+
+        except Exception as e:
+            print(f'Error in join_tables: {e}')
+

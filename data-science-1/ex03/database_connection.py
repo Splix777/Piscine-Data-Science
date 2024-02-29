@@ -50,3 +50,16 @@ class DatabaseConnection:
         """
         self.cursor.execute(make_query, params)
         self.connection.commit()
+
+    def get_columns(self, table_name):
+        """
+        Returns the columns of a table.
+
+        Args:
+        table_name: str
+
+        Returns:
+        list
+        """
+        self.execute(f"SELECT * FROM {table_name} LIMIT 0")
+        return [desc[0] for desc in self.cursor.description]

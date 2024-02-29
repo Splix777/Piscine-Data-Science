@@ -22,10 +22,12 @@ def main():
             print(f'Connected to {os.getenv("DB_NAME")} database, user {os.getenv("DB_USER")}.')
             directory = os.getenv("CSV_DIRECTORY")
             with LoadFromDir(directory=directory) as loader:
-                csv_files = loader.get_csv_files()
+                csv_files = loader.get_csv_files_table_names()
                 modifier = DatabaseModifier(db)
                 print(f'Found {len(csv_files)} CSV files in the {directory}.')
-                modifier.create_one_table_from_multiple_csv(csv_files=csv_files, name='customer')
+                # modifier.merge_existing_tables_to_one(tables=csv_files, name='customer')
+                # modifier.remove_duplicates(table_name='customer')
+                modifier.join_tables(table1='customer', table2='item', common_column='product_id')
 
     except Exception as e:
         print(f'Error in main: {e}')

@@ -59,9 +59,9 @@ class LoadFromDir:
         self.files = files
         return files
 
-    def get_csv_files(self) -> list:
+    def get_csv_files_table_names(self) -> list:
         """
-        Returns the list of files.
+        Returns the list of files names with the extension removed.
 
         Args:
         None
@@ -69,5 +69,5 @@ class LoadFromDir:
         Returns:
         list
         """
-        return self.files
+        return [os.path.basename(file).split(".")[0] for file in self.files]
 
