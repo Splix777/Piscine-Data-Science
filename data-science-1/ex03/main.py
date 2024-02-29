@@ -27,7 +27,7 @@ def main():
                 print(f'Found {len(csv_files)} CSV files in the {directory}.')
                 # modifier.merge_existing_tables_to_one(tables=csv_files, name='customer')
                 # modifier.remove_duplicates(table_name='customer')
-                modifier.join_tables(table1='customer', table2='item', common_column='product_id')
+                modifier.join_tables_batch(table1='customer', table2='item', common_column='product_id')
 
     except Exception as e:
         print(f'Error in main: {e}')

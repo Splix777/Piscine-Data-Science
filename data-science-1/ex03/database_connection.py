@@ -41,15 +41,25 @@ class DatabaseConnection:
         self.cursor.close()
         self.connection.close()
 
-    def execute(self, make_query, params=None):
+    def execute(self, make_query, params=None) -> list or None:
         """
         Executes a SQL query.
-
+    
         Args:
         query: str
+        
+        Returns:
+        list or None
         """
         self.cursor.execute(make_query, params)
         self.connection.commit()
+
+        if not make_query.strip().upper().startswith('SELECT'):
+            # For non-SELECT queries, return None
+            return None
+        # Fetch and return the results
+        result = self.cursor.fetchone()
+        return result or None
 
     def get_columns(self, table_name):
         """
