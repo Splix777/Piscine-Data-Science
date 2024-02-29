@@ -1,5 +1,16 @@
 all:
-	echo "Hello, Make!"
+	@echo "make up"
+	@echo "make upd"
+	@echo "make down"
+	@echo "make stop"
+	@echo "make start"
+	@echo "make restart"
+	@echo "make logs"
+	@echo "make ps"
+	@echo "make exec"
+	@echo "make build"
+	@echo "make rebuild"
+	@echo "make status"
 
 up:
 	docker-compose -f docker-compose.yml up -d --build
@@ -46,3 +57,11 @@ status:
 	@docker volume ls
 	@echo "\n\033[1;33mNetworks\033[0m"
 	@docker network ls
+
+fclean:
+	docker-compose down
+	docker-compose rm -f
+	docker system prune -a -f
+	docker volume prune -f
+	docker network prune -f
+	-docker volume ls -qf dangling=true | xargs -r docker volume rm
