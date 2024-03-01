@@ -1,0 +1,17 @@
+Metadata-Version: 2.1
+Name: ex03
+Version: 0.1
+Requires-Dist: pandas
+Requires-Dist: numpy
+Requires-Dist: scipy
+Requires-Dist: matplotlib
+Requires-Dist: seaborn
+Requires-Dist: scikit-learn
+Requires-Dist: jupyter
+Requires-Dist: pytest
+Requires-Dist: flake8
+Requires-Dist: black
+Requires-Dist: isort
+Requires-Dist: psycopg2-binary
+Requires-Dist: sqlalchemy
+Requires-Dist: python-dotenv

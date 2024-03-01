@@ -1,0 +1,75 @@
+import psycopg2
+
+
+class DatabaseConnection:
+    """
+    A class to connect to a PostgreSQL database.
+
+    Attributes:
+    connection: psycopg2.extensions.connection
+    cursor: psycopg2.extensions.cursor
+
+    Methods:
+    close: None
+    execute: None
+    fetchall: list
+    """
+
+    def __init__(self, host, port, name, user, password):
+        try:
+            self.connection = psycopg2.connect(
+                host=host,
+                port=port,
+                database=name,
+                user=user,
+                password=password
+            )
+            self.cursor = self.connection.cursor()
+        except psycopg2.Error as e:
+            raise e
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.close()
+
+    def close(self):
+        """
+        Closes the cursor and connection to the database.
+        """
+        self.cursor.close()
+        self.connection.close()
+
+    def execute(self, make_query, params=None) -> list or None:
+        """
+        Executes a SQL query.
+    
+        Args:
+        query: str
+        
+        Returns:
+        list or None
+        """
+        self.cursor.execute(make_query, params)
+        self.connection.commit()
+
+        if not make_query.strip().upper().startswith('SELECT'):
+            # For non-SELECT queries, return None
+            return None
+        # Fetch and return the results
+        result = self.cursor.fetchall()
+        return result or None
+
+    def get_columns(self, table_name):
+        """
+        Returns the columns of a table.
+
+        Args:
+        table_name: str
+
+        Returns:
+        list
+        """
+        self.execute(f"SELECT * FROM {table_name} LIMIT 0")
+        return [desc[0] for desc in self.cursor.description]
