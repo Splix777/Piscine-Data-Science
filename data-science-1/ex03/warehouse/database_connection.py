@@ -58,7 +58,7 @@ class DatabaseConnection:
             # For non-SELECT queries, return None
             return None
         # Fetch and return the results
-        result = self.cursor.fetchone()
+        result = self.cursor.fetchall()
         return result or None
 
     def get_columns(self, table_name):
