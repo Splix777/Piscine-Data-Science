@@ -1,44 +1,126 @@
-import sys
 import os
 import dotenv
-import tqdm
 
 import matplotlib.pyplot as plt
 
-from datetime import datetime, timedelta, date
-from matplotlib.dates import MonthLocator, DayLocator
+from datetime import datetime
+from matplotlib.dates import MonthLocator, DayLocator, DateFormatter
 
 from warehouse.database_connection import DatabaseConnection
 
 
-def display_chart(count):
-    # Check if dates are already in datetime.date format
-    if isinstance(next(iter(count.keys())), date):
-        dates = list(count.keys())
-    else:
-        # Convert string dates to datetime objects
-        dates = [datetime.strptime(date, '%Y-%m-%d') for date in count.keys()]
+def display_line_graph(start_date: datetime, end_date: datetime, db: DatabaseConnection) -> None:
+    """
+    Connects to the database and retrieves the data.
+    Displays a line graph of the number of customers per month
+    """
+    query = """
+    SELECT DATE(event_time) AS purchase_date, COUNT(DISTINCT user_id) AS customer_count
+    FROM customer
+    WHERE event_type = 'purchase'
+    AND event_time BETWEEN %s AND %s
+    GROUP BY purchase_date
+    """
+    result = db.execute(query, (start_date, end_date))
+    dates, counts = zip(*result)
 
     # Plotting the data
-    plt.plot(dates, count.values())
+    plt.plot(dates, counts)
 
-    # Set x-axis format based on the number of unique months
-    unique_months = {date.strftime('%Y-%m') for date in dates}
-    if len(unique_months) > 1:
-        # If more than one month, display ticks at the beginning of each month
-        plt.gca().xaxis.set_major_locator(MonthLocator())
-        plt.gcf().autofmt_xdate()
-    else:
-        # If only one month, display ticks for each day
-        plt.gca().xaxis.set_major_locator(DayLocator())
+    # Simplified x-axis formatting
+    set_x_axis_format(dates)
 
-    # Set chart title and labels
-    plt.title("Purchases from October 2022 to February 2023")
+    # Set dynamic chart title and labels
+    plt.title(f"Purchases from {start_date.strftime('%B %Y')} to {end_date.strftime('%B %Y')}")
     plt.xlabel("Date")
-    plt.ylabel("Purchases")
+    plt.ylabel("Number of Customers")
 
     # Show the plot
     plt.show()
+
+
+def display_bar_graph(start_date: datetime, end_date: datetime, db: DatabaseConnection) -> None:
+    """
+    Connects to the database and retrieves the data.
+    Displays a bar graph of the total sales in millions of dollars per month
+    """
+    query = """
+    SELECT DATE(event_time) AS purchase_date, SUM(price) / 1000000 AS total_sales_millions
+    FROM customer
+    WHERE event_type = 'purchase'
+    AND event_time BETWEEN %s AND %s
+    GROUP BY purchase_date
+    """
+    result = db.execute(query, (start_date, end_date))
+    dates, total_sales_millions = zip(*result)
+
+    totals_per_month = {}
+    for date, total in zip(dates, total_sales_millions):
+        month = date.strftime('%Y-%m')
+        if month in totals_per_month:
+            totals_per_month[month] += total
+        else:
+            totals_per_month[month] = total
+
+    dates = [datetime.strptime(month, '%Y-%m') for month in totals_per_month]
+    total_sales_millions = list(totals_per_month.values())
+
+    # Plotting the data as a bar graph
+    plt.bar(dates, total_sales_millions, color='blue', width=20)
+
+    # Simplified x-axis formatting
+    set_x_axis_format(dates)
+
+    # Set dynamic chart title and labels
+    plt.title(f"Total Sales from {start_date.strftime('%B %Y')} to {end_date.strftime('%B %Y')}")
+    plt.xlabel("Date")
+    plt.ylabel("Total Sales (Millions $)")
+
+    # Show the plot
+    plt.show()
+
+
+def display_filled_line_graph(start_date: datetime, end_date: datetime, db: DatabaseConnection) -> None:
+    """
+    Connects to the database and retrieves the data.
+    Displays a filled line graph of the average spending per customer in dollars per month
+    """
+    query = """
+    SELECT DATE(event_time) AS purchase_month, 
+           SUM(price) / COUNT(DISTINCT user_id) AS average_spending_per_customer
+    FROM customer
+    WHERE event_type = 'purchase'
+    AND event_time BETWEEN %s AND %s
+    GROUP BY purchase_month
+    """
+    result = db.execute(query, (start_date, end_date))
+    months, average_spending_per_customer = zip(*result)
+
+    # Plotting the data as a filled line graph
+    plt.fill_between(months, 0, average_spending_per_customer, color='skyblue', alpha=0.2)
+    plt.plot(months, average_spending_per_customer, color='blue', marker='')
+
+    # Simplified x-axis formatting
+    set_x_axis_format(months)
+
+    # Set dynamic chart title and labels
+    plt.title(f"Average Spending per Customer from {start_date.strftime('%B %Y')} to {end_date.strftime('%B %Y')}")
+    plt.xlabel("Month")
+    plt.ylabel("Average Spending per Customer ($)")
+
+    # Show the plot
+    plt.show()
+
+
+def set_x_axis_format(dates):
+    unique_months = {date.strftime('%Y-%m') for date in dates}
+    if len(unique_months) > 1:
+        plt.gca().xaxis.set_major_locator(MonthLocator())
+        plt.gca().xaxis.set_minor_locator(MonthLocator(bymonthday=15))
+        plt.gcf().autofmt_xdate()
+        plt.gca().xaxis.set_major_formatter(DateFormatter('%b'))
+    else:
+        plt.gca().xaxis.set_major_locator(DayLocator())
 
 
 def main():
@@ -55,49 +137,11 @@ def main():
             user=os.getenv("DB_USER"),
             password=os.getenv("DB_PASSWORD"),
     ) as db):
-        day = datetime(2022, 10, 1)
-        count = {}
-
-        # From the beginning of October 2022 to the end of February 2023
-        total = (datetime(2023, 3, 1) - day).days
-        with tqdm.tqdm(
-                total=total,
-                file=sys.stdout,
-                desc="Creating charts",
-                colour="green",
-        ) as pbar:
-            query = (
-                "SELECT DATE(event_time) AS purchase_date, COUNT(*) AS purchase_count "
-                "FROM customer "
-                "WHERE event_type = 'purchase' "
-                "AND event_time >= %s "
-                "GROUP BY purchase_date"
-            )
-
-            start_date = datetime(2022, 12, 1)
-            result = db.execute(query, (start_date,))
-
-            for row in result:
-                purchase_date, purchase_count = row
-                count[purchase_date] = purchase_count
-                pbar.update(1)
-                pbar.set_postfix_str(f'Date: {str(purchase_date)} Found: {purchase_count}')
-
-
-            # query = (
-            #     "SELECT COUNT(*) "
-            #     "FROM customer "
-            #     "WHERE event_type = 'purchase' "
-            #     "AND DATE(event_time) = %s"
-            # )
-            # while day < datetime(2022, 12, 1):
-            #     result = db.execute(query, (day,))
-            #     count[day.date()] = result[0]
-            #     day += timedelta(days=1)
-            #     pbar.update(1)
-            #     pbar.set_postfix_str(f'Date: {str(day.date())} Found: {result[0][0]}')
-
-        display_chart(count)
+        start_date = datetime(2022, 10, 1)
+        end_date = datetime(2023, 3, 1)
+        display_line_graph(start_date, end_date, db)
+        display_bar_graph(start_date, end_date, db)
+        display_filled_line_graph(start_date, end_date, db)
 
 
 if __name__ == "__main__":
