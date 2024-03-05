@@ -1,12 +1,8 @@
 import io
-import os
-import tqdm
-import sys
-import dotenv
+import asyncio
 
-from database_connection import DatabaseConnection
-from load_from_dir import LoadFromDir
 from csv_info import CSVInfo
+from database_connection import DatabaseConnection
 
 
 class DatabaseModifier:
@@ -22,7 +18,8 @@ class DatabaseModifier:
     def __init__(self, database: DatabaseConnection):
         self.db = database
 
-    def _get_data_types(self, column: str, data_type: str) -> str:
+    @staticmethod
+    def _get_data_types(column: str, data_type: str) -> str:
         """
         Takes a column and data type and returns the
         PostgreSQL data type.
@@ -35,7 +32,7 @@ class DatabaseModifier:
         str
         """
         csv_to_postgres_types = {
-            "event_time": "TIMESTAMP",
+            "event_time": "timestamp NOT NULL",
             "event_type": "VARCHAR(255)",
             "product_id": "INTEGER",
             "price": "FLOAT",
@@ -47,7 +44,7 @@ class DatabaseModifier:
         }
         return csv_to_postgres_types[column]
 
-    def create_tables_from_csv(self, csv: CSVInfo):
+    async def create_tables_from_csv(self, csv: CSVInfo):
         """
         Takes a .csv file and creates a table in the
         database for each file.
@@ -67,13 +64,10 @@ class DatabaseModifier:
         except Exception as e:
             print(f'Error in create_tables_from_csv: {e}')
 
-    def load_csv_into_table(self, csv: CSVInfo):
+    async def load_csv_into_table(self, csv: CSVInfo):
         try:
             table_name = csv.filename.split(".")[0]
-
-            # Open the CSV file using a with statement
             with open(csv.full_path, 'r') as file:
-                # Read the contents of the file
                 file_contents = file.read()
 
                 # Use io.StringIO to create a file-like object
@@ -86,3 +80,7 @@ class DatabaseModifier:
 
         except Exception as e:
             print(f'Error in load_csv_into_table: {e}')
+
+    async def process_csv(self, csv):
+        await self.create_tables_from_csv(csv)
+        await self.load_csv_into_table(csv)

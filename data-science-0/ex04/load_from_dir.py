@@ -18,7 +18,7 @@ class LoadFromDir:
     Returns:
     list
     """
-    def __init__(self, directory=None, file_extension=None, multiple_subdirectories=False):
+    def __init__(self, directory=None, file_extension='csv', multiple_subdirectories=True):
         """
         Initializes the LoadFromDir class.
         """

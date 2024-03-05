@@ -1,16 +1,29 @@
 all:
-	@echo "make up"
-	@echo "make upd"
-	@echo "make down"
-	@echo "make stop"
-	@echo "make start"
-	@echo "make restart"
-	@echo "make logs"
-	@echo "make ps"
-	@echo "make exec"
-	@echo "make build"
-	@echo "make rebuild"
-	@echo "make status"
+	@echo "make gamefied - Starts script to run the gamefied"
+	@echo "make up - Start the containers"
+	@echo "make upd - Start the containers in background"
+	@echo "make down - Stop the containers"
+	@echo "make stop - Stop the containers"
+	@echo "make start - Start the containers"
+	@echo "make restart - Restart the containers"
+	@echo "make logs - Show the logs"
+	@echo "make ps - Show the status of the containers"
+	@echo "make exec - Enter the container"
+	@echo "make build - Build the containers"
+	@echo "make rebuild - Rebuild the containers"
+	@echo "make status - Show the status of the containers, images, volumes and networks"
+	@echo "make fclean - Stop and remove the containers, images, volumes and networks"
+
+gamefied:
+	@echo "Starting the gamefied"
+	@echo "Please, wait a moment"
+	@echo "Starting the containers"
+	@docker-compose -f docker-compose.yml up -d --build
+	@echo "Launching the gamefied"
+	@python3 -m venv .venv
+	@. .venv/bin/activate && pip install -r requirements.txt
+	@pip install -r requirements.txt
+	@python3 gamefied.py
 
 up:
 	docker-compose -f docker-compose.yml up -d --build
