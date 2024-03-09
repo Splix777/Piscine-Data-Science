@@ -1,7 +1,4 @@
-# load_from_dir.py
-
 import os
-import pandas as pd
 import glob
 
 

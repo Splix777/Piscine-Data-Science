@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 
-from utils import check_errors
+from warehouse.utils import check_errors
 
 
 class CSVInfo:

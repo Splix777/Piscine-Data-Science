@@ -1,6 +1,6 @@
 import psycopg2
 
-from utils import check_errors
+from warehouse.utils import check_errors
 
 
 class DatabaseConnection:

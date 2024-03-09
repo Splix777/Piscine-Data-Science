@@ -10,3 +10,4 @@ warehouse/database_connection.py
 warehouse/database_modifier.py
 warehouse/load_from_dir.py
 warehouse/main.py
+warehouse/utils.py

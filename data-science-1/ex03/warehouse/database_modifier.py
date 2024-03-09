@@ -1,8 +1,8 @@
 import io
 
-from csv_info import CSVInfo
-from database_connection import DatabaseConnection
-from utils import check_errors, timing_decorator, write_to_file
+from warehouse.csv_info import CSVInfo
+from warehouse.database_connection import DatabaseConnection
+from warehouse.utils import check_errors, timing_decorator, write_to_file
 
 
 class DatabaseModifier:

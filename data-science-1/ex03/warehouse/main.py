@@ -3,11 +3,11 @@ import sys
 import tqdm
 import dotenv
 
-from database_connection import DatabaseConnection
-from load_from_dir import LoadFromDir
-from csv_info import CSVInfo
-from database_modifier import DatabaseModifier
-from utils import check_errors
+from warehouse.csv_info import CSVInfo
+from warehouse.utils import check_errors
+from warehouse.load_from_dir import LoadFromDir
+from warehouse.database_modifier import DatabaseModifier
+from warehouse.database_connection import DatabaseConnection
 
 
 @check_errors(on_off=True)
