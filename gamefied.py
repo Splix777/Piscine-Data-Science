@@ -32,18 +32,17 @@ if __name__ == "__main__":
     os.system("clear")
 
     print(f"""    Which Module are you evaluating {user}?
-        1. Data Engineering
-        2. Data Warehouse
-        3. Data Analyst
-        4. Data Science part 1
-        5. Data Science part 2
+        1. Data Engineering & Data Warehouse
+        2. Data Analyst
+        3. Data Science part 1
+        4. Data Science part 2
         Select a module: """, end="")
 
     module = int(input())
     os.system("clear")
 
-    if 1 <= module <= 5:
-        os.system(f'python3 ./data-science-{module - 1}/main.py')
+    if 1 <= module <= 4:
+        os.system(f'python3 ./data-science-{module}/main.py')
     else:
         print("Invalid module selection. Please select a module between 1 and 5.")
 

@@ -26,8 +26,8 @@ class LoadFromDir:
             self.directory = directory
             self.file_extension = file_extension
             self.multiple_subdirectories = multiple_subdirectories
-            self.files = self.load_from_dir()
             self.filenames = []
+            self.files = self.load_from_dir()
         except Exception as e:
             raise e
 
@@ -55,19 +55,6 @@ class LoadFromDir:
             files = glob.glob(self.directory + '/*.' + self.file_extension)
         if not files:
             raise FileNotFoundError(f'No files with the extension {self.file_extension} found in {self.directory}.')
-        self.filenames = list(files)
+        self.filenames = [os.path.basename(file).split('.')[0] for file in files]
         self.files = files
         return files
-
-    def get_csv_files_table_names(self) -> list:
-        """
-        Returns the list of files names with the extension removed.
-
-        Args:
-        None
-
-        Returns:
-        list
-        """
-        return [os.path.basename(file).split(".")[0] for file in self.files]
-

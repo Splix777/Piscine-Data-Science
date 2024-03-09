@@ -130,13 +130,13 @@ def main():
     Then creates 3 charts from the beginning of October 2022 to the end of February 2023.
     """
     dotenv.load_dotenv()
-    with (DatabaseConnection(
+    with DatabaseConnection(
             host=os.getenv("DB_HOST"),
             port=os.getenv("DB_PORT"),
             name=os.getenv("DB_NAME"),
             user=os.getenv("DB_USER"),
             password=os.getenv("DB_PASSWORD"),
-    ) as db):
+    ) as db:
         start_date = datetime(2022, 10, 1)
         end_date = datetime(2023, 3, 1)
         display_line_graph(start_date, end_date, db)

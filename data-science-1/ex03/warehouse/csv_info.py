@@ -1,9 +1,11 @@
 import os
 import pandas as pd
 
+from utils import check_errors
+
 
 class CSVInfo:
-    def __init__(self, filename):
+    def __init__(self, filename: str) -> None:
         """
         A class to get information about a .csv file.
 
@@ -17,7 +19,7 @@ class CSVInfo:
         rows: int
         size: int
         """
-        self.filename = filename.split("/")[-1]
+        self.filename = filename.split("/")[-1].split(".")[0]
         self.data = None
         self.full_path = filename
         self.list_of_columns = None
@@ -27,6 +29,7 @@ class CSVInfo:
         self.size = None
         self.get_info()
 
+    @check_errors(on_off=True)
     def get_info(self):
         self.data = pd.read_csv(self.full_path)
         self.list_of_columns = list(self.data.columns)
