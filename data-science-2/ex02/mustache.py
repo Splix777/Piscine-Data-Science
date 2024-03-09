@@ -1,7 +1,3 @@
-# Print the mean, median, min, max, first, second and third quartile of the price of
-# the items purchased
-# • Make box plots that display the price of the items purchased
-
 import os
 import dotenv
 

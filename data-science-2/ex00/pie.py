@@ -1,10 +1,9 @@
-import sys
-# •Make your own pie chart to understand what people do on the site
-# •You have to connect to your Data Warehouse of module 014
+
 import os
 import dotenv
 
 from warehouse.database_connection import DatabaseConnection
+from warehouse.utils import check_errors
 import matplotlib.pyplot as plt
 
 
@@ -23,7 +22,7 @@ def display_pie_chart(event_types: dict) -> None:
     )
     plt.show()
 
-
+@check_errors(on_off=True)
 def main():
     """
     Connect to the database and display a pie chart of the event types.
